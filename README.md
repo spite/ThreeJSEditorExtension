@@ -2,6 +2,8 @@
 
 A Chrome DevTools extension to manage any three.js project.
 
+![Demo](/about/demo.gif)
+
 ### How to install ###
 
 While in beta, you can load the extension from disk directly:
