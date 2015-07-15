@@ -1,0 +1,66 @@
+<html>
+<head>
+<style>
+*{ box-sizing: border-box; margin: 0; padding: 0; font-size: 12px;}
+body{ background-color: #eee; -webkit-user-select: none; cursor: default; }
+#reload{ padding: 10px; cursor: pointer;}
+#container{ position: absolute; left: 0; top: 0; right: 0; bottom: 0; display: none; }
+#waiting{ display: none; color: #404040; text-align: center; justify-content: center; align-items: center; height: 100%; }
+#info{ color: #404040; text-align: center; display: flex; justify-content: center; align-items: center; height: 100%; }
+#info h1{ margin-bottom: 1em;}
+#info p{ margin-bottom: 1em; line-height: 1.4em}
+#info button{ margin-bottom: 1em;}
+#info a{ color: #4c9ed9; }
+#info a:hover{ color: #202020;}
+#log{ position: absolute;left: 50%; top:0;right: 0; bottom: 0; overflow: auto; display: none;}
+#settingsPanel{ position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: white; padding: 40px; display: none;}
+#settingsPanel h1{ margin-bottom: 10px;}
+#settingsPanel input[type="checkbox"]{ margin-right: 5px;}
+#toolbarContainer{ position: absolute; left: 0; bottom: 0; height: 25px; width: 200px; }
+#toolbarContainer li{ width: 25px; height: 25px; float: left; }
+#toolbarContainer a{ width: 21px; height: 21px; margin: 2px; display: block; background-repeat: no-repeat; background-position: 50% 50%; background-size: contain;}
+#settingsButton{ background-image: url( assets/gears.svg ); }
+#highlightButton{ background-image: url( assets/eye.svg ); }
+#treeView{ position: absolute; left: 0; top: 0; right: 50%; bottom: 0; overflow: auto;}
+#editPanel{ position: absolute; left: 50%; top: 0; right: 0; bottom: 0; overflow: auto; border-left: 1px solid white;}
+.panel{ padding: 10px;} 
+.panel div{ position: relative; width: 100%; height: 20px;}
+.panel span:first-child{ position: absolute; left: 0; top: 0; width: 80px;}
+.panel span:nth-child(2){ position: absolute; left: 80px; top: 0; right: 0;}
+.panel input[type=number]{ width: 60px;}
+</style>
+<link href='treeView/treeView.css' rel='stylesheet' type='text/css'>
+<script src="treeView/treeView.js"></script>
+</head>
+<body>
+<div id="info"><div>
+	<p>Welcome!</p>
+	<h1>Three.js scene editor extension<br/>v1.0.0 (beta)</h1>
+	<p>To start tracking three.js scenes,<br/>the extension needs to reload the page.</p>
+	<button id="reload" >Reload</button>
+	<p>Bugs, ideas and feedback: <a rel="external" href="https://github.com/spite/Three.jsExtension">GitHub page</a><br/><a rel="external" href="https://twitter.com/thespite" >@thespite</a> | <a rel="external" href="http://www.clicktorelease.com" >www.clicktorelease.com</a></p>
+</div></div>
+<div id="waiting" >
+	<p>Waiting for scenes to be created...</p>
+</div>
+<div id="log" ></div>
+<div id="container" >
+  <div id="treeView"></div>
+  <div id="editPanel">
+    <div class="panel">
+      <div><h1>Object3D</h1></div>
+      <div><span>Visible</span><span><input type="checkbox" id="object3dVisible" name="object3dVisible"/></span></div>
+      <div><span>Position</span><span><input type="number" id="object3dPositionX"/><input type="number" id="object3dPositionY"/><input type="number" id="object3dPositionZ"/></span></div>
+      <div><span>Rotation</span><span><input type="number" id="object3dRotationX"/><input type="number" id="object3dRotationY"/><input type="number" id="object3dRotationZ"/></span></div>
+      <div><span>Scale</span><span><input type="number" id="object3dScaleX"/><input type="number" id="object3dScaleY"/><input type="number" id="object3dScaleZ"/></span></div>
+      <div><h1>Light</h1></div>
+      <div><span>Color</span><span><input type="text" id="lightColor" name="lightColor"/></span></div>
+    </div>
+  </div>
+</div>
+<div id="settingsPanel" >
+	<h1>Settings</h1>
+</div>
+<script src="panel.js"></script>
+</body>
+</html>
