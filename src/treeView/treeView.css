@@ -1,5 +1,16 @@
 ul.treeView li{ margin-left: 1.2em; position: relative;}
-ul.treeView li::before{ content: ""; width: 1em; height: 1em; display: block; float: left; margin-right: .4em; margin-top: .2em; background-image: url(minus_square.svg); background-size: cover; opacity: .6; }
+ul.treeView li span.button{ 
+	width: 1em; 
+	height: 1em; 
+	display: block; 
+	float: left; 
+	margin-right: .4em; 
+	margin-top: .2em; 
+	background-image: url(minus_square.svg); 
+	background-size: cover; 
+	opacity: .6; 
+	cursor: pointer;
+}
 ul.treeView{ list-style-type: none; 
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -15,5 +26,5 @@ ul.treeView > li:first-child{ margin-left: .2em;}
 ul.treeView li p{ display: inline; cursor: pointer; }
 ul.treeView li p:hover{ color: #222;}
 ul.treeView li.collapsed{ height: 1.5em; overflow: hidden;}
-ul.treeView li.collapsed::before{ background-image: url(plus_square.svg); }
+ul.treeView li.collapsed span.button{ background-image: url(plus_square.svg); }
 ul.treeView .active{ font-weight: bold; color: black;}

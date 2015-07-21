@@ -8,6 +8,9 @@ function TreeViewItem( label, id ) {
 	this.li = document.createElement( 'li' );
 	var p = document.createElement( 'p' );
 	p.textContent = this.label;
+	var span = document.createElement( 'span' );
+	span.className = 'button';
+	this.li.appendChild( span );
 	this.li.appendChild( p );
 
 	this.ul = null;
@@ -20,10 +23,17 @@ function TreeViewItem( label, id ) {
 
 		this.parent.clear();
 		p.classList.add( 'active' );
-		li.classList.toggle( 'collapsed' );
-
+	
 		this.parent.onSelect( this.id );
 		
+		e.preventDefault();
+
+	}.bind( this ) );
+
+	span.addEventListener( 'click', function( e ) {
+
+		li.classList.toggle( 'collapsed' );
+	
 		e.preventDefault();
 
 	}.bind( this ) );
