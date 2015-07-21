@@ -61,7 +61,9 @@ body{ background-color: #eee; -webkit-user-select: none; cursor: default; }
         <div><span>Position</span><span><input type="number" id="object3d-position-x"/><input type="number" id="object3d-position-y"/><input type="number" id="object3d-position-z"/></span></div>
         <div><span>Rotation</span><span><input type="number" id="object3d-rotation-x"/><input type="number" id="object3d-rotation-y"/><input type="number" id="object3d-rotation-z"/></span></div>
         <div><span>Scale</span><span><input type="number" id="object3d-scale-x"/><input type="number" id="object3d-scale-y"/><input type="number" id="object3d-scale-z"/></span></div>
-        <div><span>Data</span><span><input type="text" id="object3d-data" name="object3d-data"/></span></div>
+        <div><span>Cast shadow</span><span><input type="checkbox" id="object3d-castShadow" name="object3d-castShadow"/></span></div>
+        <div><span>Receive shadow</span><span><input type="checkbox" id="object3d-receiveShadow" name="object3d-receiveShadow"/></span></div>
+        <div><span>Data</span><span><input type="text" id="object3d-userData" name="object3d-userData"/></span></div>
       </section>
       <section id="light-panel">
         <div><h1>Light</h1></div>
@@ -78,6 +80,7 @@ body{ background-color: #eee; -webkit-user-select: none; cursor: default; }
         <div><span>FOV</span><span><input type="text" id="camera-fov" name="camera-fov"/></span></div>
         <div><span>Near</span><span><input type="text" id="camera-near" name="camera-near"/></span></div>
         <div><span>Far</span><span><input type="text" id="camera-far" name="camera-far"/></span></div>
+        <div><span>Aspect</span><span><input type="text" id="camera-aspect" name="camera-aspect"/></span></div>
         <div><span>Left</span><span><input type="text" id="camera-left" name="camera-left"/></span></div>
         <div><span>Right</span><span><input type="text" id="camera-right" name="camera-right"/></span></div>
         <div><span>Top</span><span><input type="text" id="camera-top" name="camera-top"/></span></div>

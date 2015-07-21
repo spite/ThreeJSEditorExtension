@@ -281,7 +281,7 @@ function f() {
 		'rotation': { type: 'v3' },
 		'scale': { type: 'v3' },
 		'visible': { type: 'b' },
-		'data': { type: 't' },
+		'userData': { type: 'tj' },
 		'intensity': { type: 'f' },
 		'color': { type: 'c' },
 		'groundColor': { type: 'c' },
@@ -295,17 +295,20 @@ function f() {
 		'left': { type: 'f' },
 		'right': { type: 'f' },
 		'top': { type: 'f' },
-		'bottom': { type: 'f' }
+		'bottom': { type: 'f' },
+		'aspect': { type: 'f' },
+		'castShadow': { type: 'b' },
+		'receiveShadow': { type: 'b' }
 	}
 
 	var categories = {
-		'object3d': [ 'uuid', 'name', 'visible', 'position', 'rotation', 'scale', 'data' ],
+		'object3d': [ 'uuid', 'name', 'visible', 'position', 'rotation', 'scale', 'userData', 'castShadow', 'receiveShadow' ],
 		'light': [ 'intensity', 'color', 'groundColor', 'distance', 'angle', 'decay', 'exponent' ],
-		'camera': [ 'fov', 'near', 'far', 'left', 'right', 'top', 'bottom' ]
+		'camera': [ 'fov', 'near', 'far', 'left', 'right', 'top', 'bottom', 'aspect' ]
 	}
 
 	var properties = {
-		'Object3D': [ 'uuid', 'name', 'position', 'visible', 'data' ],
+		'Object3D': [ 'uuid', 'name', 'position', 'visible', 'userData', 'castShadow', 'receiveShadow' ],
 		'Mesh': [ 'rotation', 'scale' ],
 		'PointCloud': [ 'rotation', 'scale' ],
 		'PointLight': [ 'intensity', 'color', 'distance', 'decay' ],
@@ -313,7 +316,7 @@ function f() {
 		'HemisphereLight': [ 'intensity', 'color', 'groundColor' ],
 		'DirectionalLight': [ 'intensity', 'color' ],
 		'AmbientLight': [ 'color' ],
-		'PerspectiveCamera': [ 'rotation', 'scale', 'fov', 'near', 'far' ],
+		'PerspectiveCamera': [ 'rotation', 'scale', 'fov', 'near', 'far', 'aspect' ],
 		'OrthographicCamera': [ 'left', 'right', 'top', 'bottom', 'near', 'far' ]
 	}
 
@@ -338,6 +341,9 @@ function f() {
 						case 'ti':
 						case 'b':
 						data[ property ] = o[ property ];
+						break;
+						case 'tj': 
+						data[ property ] = JSON.stringify( o[ property ] );
 						break;
 						case 'v3':
 						data[ property ] = { 
@@ -374,7 +380,11 @@ function f() {
 				if( f && f.type === 'c' ) {
 					v[ dataFields[ j ] ].set( data.value );
 				} else {
-					v[ dataFields[ j ] ] = data.value;
+					if( f && f.type === 'tj' ) {
+						v[ dataFields[ j ] ] = JSON.parse( data.value );
+					} else {
+						v[ dataFields[ j ] ] = data.value;						
+					}
 				}
 			} else {
 				v = v[ dataFields[ j ] ];
@@ -415,7 +425,7 @@ var button = document.getElementById( 'reload' ),
 	ul = document.querySelector( '#container ul' ),
 	treeViewContainer = document.getElementById( 'treeView' );
 
-var verbose = !true;
+var verbose = true;
 if( verbose ) {
 	log.style.left = '50%';
 	log.style.display = 'block';
@@ -556,6 +566,12 @@ function parseFields( ) {
 				chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'' + id + '\', value: ' + this.value + ' } )' );
 			} ) } )( id );
 			break;
+			case 'tj':
+			panel[ j ] = document.getElementById( id );
+			( function( id ) { panel[ j ].addEventListener( 'change', function( e ) {
+				chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'' + id + '\', value: \'' + this.value + '\' } )' );
+			} ) } )( id );
+			break;
 			case 'c':
 			panel[ j ] = document.getElementById( id );
 			( function( id ) { panel[ j ].addEventListener( 'change', function( e ) {
@@ -639,7 +655,7 @@ backgroundPageConnection.onMessage.addListener( function( msg ) {
 				//logMsg( '>> CONNECT #', objects[ msg.parentId ], '#', objects[ msg.id ], '#' );
 				if( objects[ msg.id ].data.node.parentNode ) objects[ msg.id ].data.node.parentNode.removeChild( objects[ msg.id ].data.node );
 				objects[ msg.parentId ].data.node.appendChild( objects[ msg.id ].data.node );
-				objects[ msg.id ].parent = parentId;
+				objects[ msg.id ].parent = msg.parentId;
 			} else {
 				if( !objects[ msg.id ].data.node.parentNode ) r.appendChild( objects[ msg.id ].data.node );
 			}
@@ -682,6 +698,7 @@ backgroundPageConnection.onMessage.addListener( function( msg ) {
 					switch( type ) {
 						case 't':
 						case 'ti':
+						case 'tj':
 						case 'f':
 							panel[ j ].value = data[ j ];
 							panel[ j ].parentElement.parentElement.style.display = 'block';
