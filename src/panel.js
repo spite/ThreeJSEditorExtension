@@ -353,7 +353,7 @@ function f() {
 						};						
 						break;
 						case 'c':
-						data[ property ] = o[ property ].getHex();					
+						data[ property ] = o[ property ].getHexString();					
 						break;
 					}
 					//data[ property ][ 'instance' ] = j;
@@ -708,7 +708,7 @@ backgroundPageConnection.onMessage.addListener( function( msg ) {
 							panel[ j ].parentElement.parentElement.style.display = 'block';
 						break;
 						case 'c':
-							panel[ j ].value = data[ j ];
+							panel[ j ].value = '#' + data[ j ];
 							panel[ j ].parentElement.parentElement.style.display = 'block';
 							break;
 						case 'v3':
