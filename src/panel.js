@@ -425,7 +425,7 @@ var button = document.getElementById( 'reload' ),
 	ul = document.querySelector( '#container ul' ),
 	treeViewContainer = document.getElementById( 'treeView' );
 
-var verbose = true;
+var verbose = !true;
 if( verbose ) {
 	log.style.left = '50%';
 	log.style.display = 'block';
@@ -510,6 +510,11 @@ function tearDown() {
 	}
 	r = new TreeViewItem( 'Renderer', null );
 	treeView.getRoot().appendChild( r );
+
+	for( var i in categories ){
+		var el = document.getElementById( i + '-panel' );
+		el.style.display = 'none';
+	}
 
 }
 
