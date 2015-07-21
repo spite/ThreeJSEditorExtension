@@ -1,16 +1,23 @@
 ul.treeView li{ margin-left: 1.2em; position: relative;}
-ul.treeView li span.button{ 
+ul.treeView li span.icon{ 
 	width: 1em; 
 	height: 1em; 
 	display: block; 
 	float: left; 
 	margin-right: .4em; 
 	margin-top: .2em; 
-	background-image: url(minus_square.svg); 
-	background-size: cover; 
+	background-size: contain; 
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
 	opacity: .6; 
-	cursor: pointer;
 	position: absolute;
+}
+ul.treeView li span.button{ 
+	background-image: url(minus_square.svg); 
+	cursor: pointer;
+}
+ul.treeView li span.item{ 
+	background-image: url(item.svg); 
 }
 ul.treeView{ list-style-type: none; 
 	-webkit-touch-callout: none;

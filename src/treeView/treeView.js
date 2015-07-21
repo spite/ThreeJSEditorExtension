@@ -8,9 +8,9 @@ function TreeViewItem( label, id ) {
 	this.li = document.createElement( 'li' );
 	var p = document.createElement( 'p' );
 	p.textContent = this.label;
-	var span = document.createElement( 'span' );
-	span.className = 'button';
-	this.li.appendChild( span );
+	this.span = document.createElement( 'span' );
+	this.span.className = 'icon item';
+	this.li.appendChild( this.span );
 	this.li.appendChild( p );
 
 	this.ul = null;
@@ -30,7 +30,7 @@ function TreeViewItem( label, id ) {
 
 	}.bind( this ) );
 
-	span.addEventListener( 'click', function( e ) {
+	this.span.addEventListener( 'click', function( e ) {
 
 		li.classList.toggle( 'collapsed' );
 	
@@ -64,6 +64,8 @@ TreeViewItem.prototype.appendChild = function( child ) {
 	this.children.push( child );
 	this.ul.appendChild( child.li );
 
+	this.span.className = 'icon button';
+
 }
 
 TreeViewItem.prototype.removeChild = function( child ) {
@@ -82,6 +84,10 @@ TreeViewItem.prototype.removeChild = function( child ) {
 		}
 	}
 	this.ul.removeChild( child.li );
+
+	if( this.children.length ) {
+		this.span.className = 'icon item';
+	}
 
 }
 
