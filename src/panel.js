@@ -262,17 +262,100 @@ function f() {
 
 	}
 
+	/*
+	Object3D: uuid, name, parent, position, rotation, scale, visible, data
+	Mesh: uuid, name, parent, position, rotation, scale, visible, data, geometry, material
+
+	PointLight: uuid, name, parent, position, intensity, color, distance, decay, visible, data
+	SpotLight: uuid, name, parent, position, intensity, color, distance, angle, exponent, decay, visible, data
+	DirectionalLight: uuid, name, parent, position, intensity, color, visible, data
+	HemisphereLight: uuid, name, parent, position, intensity, color, ground color, visible, data
+	AmbientLight: uuid, name, parent, position, color, visible, data
+	PerspectiveCamera: uuid, name, parent, position, rotation, scale, fov, near, far, visible, data
+	*/
+
+	var fields = {
+		'uuid': { type: 'ti' },
+		'name': { type: 'ti' },
+		'position': { type: 'v3' },
+		'rotation': { type: 'v3' },
+		'scale': { type: 'v3' },
+		'visible': { type: 'b' },
+		'data': { type: 't' },
+		'intensity': { type: 'f' },
+		'color': { type: 'c' },
+		'groundColor': { type: 'c' },
+		'distance': { type: 'f' },
+		'angle': { type: 'f' },
+		'decay': { type: 'f' },
+		'exponent': { type: 'f' },
+		'fov': { type: 'f' },
+		'near': { type: 'f' },
+		'far': { type: 'f' },
+		'left': { type: 'f' },
+		'right': { type: 'f' },
+		'top': { type: 'f' },
+		'bottom': { type: 'f' }
+	}
+
+	var categories = {
+		'object3d': [ 'uuid', 'name', 'visible', 'position', 'rotation', 'scale', 'data' ],
+		'light': [ 'intensity', 'color', 'groundColor', 'distance', 'angle', 'decay', 'exponent' ],
+		'camera': [ 'fov', 'near', 'far', 'left', 'right', 'top', 'bottom' ]
+	}
+
+	var properties = {
+		'Object3D': [ 'uuid', 'name', 'position', 'visible', 'data' ],
+		'Mesh': [ 'rotation', 'scale' ],
+		'PointCloud': [ 'rotation', 'scale' ],
+		'PointLight': [ 'intensity', 'color', 'distance', 'decay' ],
+		'SpotLight': [ 'intensity', 'color' ],
+		'HemisphereLight': [ 'intensity', 'color', 'groundColor' ],
+		'DirectionalLight': [ 'intensity', 'color' ],
+		'AmbientLight': [ 'color' ],
+		'PerspectiveCamera': [ 'rotation', 'scale', 'fov', 'near', 'far' ],
+		'OrthographicCamera': [ 'left', 'right', 'top', 'bottom', 'near', 'far' ]
+	}
+
 	window.UISelect = function( id ) {
 
 		var o = objects[ id ];
-
 		var data = {
 			id: o.id,
-			visible: o.visible,
-			position: { x: o.position.x, y: o.position.y, z: o.position.z },
-			rotation: { x: o.rotation.x, y: o.rotation.y, z: o.rotation.z },
-			scale: { x: o.scale.x, y: o.scale.y, z: o.scale.z }
+		};
+
+		var p = [];
+		for( var j in properties ) {
+			if( o instanceof THREE[ j ] ) {
+				logMsg( j );
+				for( var i in properties[ j ] ) {
+					var property = properties[ j ][ i ];
+					var type = fields[ property ].type;
+					logMsg( property, type );
+					switch( type ) {
+						case 'f':
+						case 't':
+						case 'ti':
+						case 'b':
+						data[ property ] = o[ property ];
+						break;
+						case 'v3':
+						data[ property ] = { 
+							x: o[ property ].x,
+							y: o[ property ].y,
+							z: o[ property ].z,
+						};						
+						break;
+						case 'c':
+						data[ property ] = o[ property ].getHex();					
+						break;
+					}
+					//data[ property ][ 'instance' ] = j;
+				}
+			}
 		}
+
+		logMsg( JSON.stringify( data ) );
 
 		window.postMessage( { source: 'ThreejsEditor', method: 'objectSelected', id: id, data: JSON.stringify( data ) }, '*');
 
@@ -280,14 +363,29 @@ function f() {
 
 	window.ChangeProperty = function( id, data ) {
 
+		logMsg( JSON.stringify( data ) );
+
 		var o = objects[ id ];
-		var fields = data.property.split( '.' );
+		var dataFields = data.property.split( '-' );
 		var v = o;
-		for( var j = 0; j < fields.length; j++ ) {
-			if( j === fields.length - 1 ) {
-				v[ fields[ j ] ] = data.value;
+		for( var j = 1; j < dataFields.length; j++ ) {
+			if( j === dataFields.length - 1 ) {
+				var f = fields[ dataFields[ j ] ];
+				if( f && f.type === 'c' ) {
+					v[ dataFields[ j ] ].set( data.value );
+				} else {
+					v[ dataFields[ j ] ] = data.value;
+				}
 			} else {
-				v = v[ fields[ j ] ];
+				v = v[ dataFields[ j ] ];
+			}
+		}
+
+		if( dataFields[ 0 ] === 'camera' ) {
+			o.updateProjectionMatrix();
+			if( o instanceof THREE.PerspectiveCamera ) {
+			}
+			if( o instanceof THREE.OrthographicCamera ) {
 			}
 		}
 
@@ -295,6 +393,7 @@ function f() {
 
 	window.addEventListener( 'load', function() {
 		window.postMessage( { source: 'ThreejsEditor', method: 'init' }, '*');
+		window.postMessage( { source: 'ThreejsEditor', method: 'activateFields', fields: JSON.stringify( fields ), categories: JSON.stringify( categories ) }, '*');
 	} );
 
 }
@@ -316,7 +415,7 @@ var button = document.getElementById( 'reload' ),
 	ul = document.querySelector( '#container ul' ),
 	treeViewContainer = document.getElementById( 'treeView' );
 
-var verbose = false;
+var verbose = !true;
 if( verbose ) {
 	log.style.left = '50%';
 	log.style.display = 'block';
@@ -410,66 +509,96 @@ var treeView = null;
 var r = null;
 var currentObject = null;
 
-var panel = {
-	visible: document.getElementById( 'object3dVisible' ),
-	positionX: document.getElementById( 'object3dPositionX' ),
-	positionY: document.getElementById( 'object3dPositionY' ),
-	positionZ: document.getElementById( 'object3dPositionZ' ),
-	rotationX: document.getElementById( 'object3dRotationX' ),
-	rotationY: document.getElementById( 'object3dRotationY' ),
-	rotationZ: document.getElementById( 'object3dRotationZ' ),
-	scaleX: document.getElementById( 'object3dScaleX' ),
-	scaleY: document.getElementById( 'object3dScaleY' ),
-	scaleZ: document.getElementById( 'object3dScaleZ' ),
-};
+var panel = {};
+var fields = {};
+var categories = {};
 
-panel.positionX.setAttribute( 'step', .1 );
-panel.positionY.setAttribute( 'step', .1 );
-panel.positionZ.setAttribute( 'step', .1 );
+function hashCode(str) { // java String#hashCode
+    var hash = 0;
+    for (var i = 0; i < str.length; i++) {
+       hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return hash;
+} 
 
-panel.visible.addEventListener( 'change', function( e ) {
-	chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'visible\', value: ' + this.checked + ' } )' );
-} );
+function intToRGB(i){
+    var c = (i & 0x00FFFFFF)
+        .toString(16)
+        .toUpperCase();
 
-panel.positionX.addEventListener( 'change', function( e ) {
-	chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'position.x\', value: ' + this.value + ' } )' );
-} );
+    return "00000".substring(0, 6 - c.length) + c;
+}
 
-panel.positionY.addEventListener( 'change', function( e ) {
-	chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'position.y\', value: ' + this.value + ' } )' );
-} );
+function parseFields( ) {
 
-panel.positionZ.addEventListener( 'change', function( e ) {
-	chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'position.z\', value: ' + this.value + ' } )' );
-} );
+	 var category = null;
 
-panel.rotationX.addEventListener( 'change', function( e ) {
-	chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'rotation.x\', value: ' + this.value + ' } )' );
-} );
+	for( var j in fields ) {
+		var t = fields[ j ].type;
+		for( var i in categories ) {
+			var c = i;
+			for( var k in categories[ i ] ) {
+				if( categories[ i ][ k ] === j ) {
+					category = c;
+				}
+			}
+		}
 
-panel.rotationY.addEventListener( 'change', function( e ) {
-	chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'rotation.y\', value: ' + this.value + ' } )' );
-} );
+		var id = category + '-' + j;
+		logMsg( j, t, category, id );
 
-panel.rotationZ.addEventListener( 'change', function( e ) {
-	chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'rotation.z\', value: ' + this.value + ' } )' );
-} );
+		switch( t ) {
+			case 't':
+			case 'ti':
+			case 'f':
+			panel[ j ] = document.getElementById( id );
+			( function( id ) { panel[ j ].addEventListener( 'change', function( e ) {
+				chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'' + id + '\', value: ' + this.value + ' } )' );
+			} ) } )( id );
+			break;
+			case 'c':
+			panel[ j ] = document.getElementById( id );
+			( function( id ) { panel[ j ].addEventListener( 'change', function( e ) {
+				var c = this.value.toString();
+				chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'' + id + '\', value: \'' + c + '\' } )' );
+			} ) } )( id );
+			break;
+			case 'b':
+			panel[ j ] = document.getElementById( id );
+			( function( id ) { panel[ j ].addEventListener( 'change', function( e ) {
+				chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'' + id + '\', value: ' + this.checked + ' } )' );
+			} ) } )( id );
+			break;
+			case 'v3':
+			panel[ j + 'x' ] = document.getElementById( id + '-x' );
+			panel[ j + 'y' ] = document.getElementById( id + '-y' );
+			panel[ j + 'z' ] = document.getElementById( id + '-z' );
+			( function( id ) { panel[ j + 'x' ].addEventListener( 'change', function( e ) {
+				chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'' + id + '-x\', value: ' + this.value + ' } )' );
+			} ) } )( id );
+			( function( id ) { panel[ j + 'y' ].addEventListener( 'change', function( e ) {
+				chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'' + id + '-y\', value: ' + this.value + ' } )' );
+			} ) } )( id );
+			( function( id ) { panel[ j + 'z' ].addEventListener( 'change', function( e ) {
+				chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'' + id + '-z\', value: ' + this.value + ' } )' );
+			} ) } )( id );
+			break;
+		}
 
-panel.scaleX.addEventListener( 'change', function( e ) {
-	chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'scale.x\', value: ' + this.value + ' } )' );
-} );
+	}
 
-panel.scaleY.addEventListener( 'change', function( e ) {
-	chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'scale.y\', value: ' + this.value + ' } )' );
-} );
+	logMsg( 'PANEL', JSON.stringify( panel ) );
 
-panel.scaleZ.addEventListener( 'change', function( e ) {
-	chrome.devtools.inspectedWindow.eval( 'ChangeProperty( \'' + currentObject.id + '\', { property: \'scale.z\', value: ' + this.value + ' } )' );
-} );
+}
 
 backgroundPageConnection.onMessage.addListener( function( msg ) {
 
 	switch( msg.method ) {
+		case 'activateFields': 
+			fields = JSON.parse( msg.fields );
+			categories = JSON.parse( msg.categories );
+			parseFields();
+			break;
 		case 'inject':
 			logMsg( '>> inject' );
 			tearDown();
@@ -534,19 +663,59 @@ backgroundPageConnection.onMessage.addListener( function( msg ) {
 			logMsg( '>> DONE' );
 			break;
 		case 'objectSelected' :
-			logMsg( msg.data );
+			logMsg( '>>> OBJECT SELECTED' );
 			currentObject = objects[ msg.id ];
 			var data = JSON.parse( msg.data );
-			panel.visible.checked = data.visible;
-			panel.positionX.value = data.position.x;
-			panel.positionY.value = data.position.y;
-			panel.positionZ.value = data.position.z;
-			panel.rotationX.value = data.rotation.x;
-			panel.rotationY.value = data.rotation.y;
-			panel.rotationZ.value = data.rotation.z;
-			panel.scaleX.value = data.scale.x;
-			panel.scaleY.value = data.scale.y;
-			panel.scaleZ.value = data.scale.z;
+			for( var j in panel ) {
+				panel[ j ].parentElement.parentElement.style.display = 'none';
+			}
+			for( var i in categories ){
+				var el = document.getElementById( i + '-panel' );
+				el.style.display = 'none';
+				logMsg( 'HIDE ' + i );
+			}
+
+			for( var j in data ) {
+				if( fields[ j ] != undefined ) {
+					var type = fields[ j ].type;
+					logMsg( j, panel[ j ], type );
+					switch( type ) {
+						case 't':
+						case 'ti':
+						case 'f':
+							panel[ j ].value = data[ j ];
+							panel[ j ].parentElement.parentElement.style.display = 'block';
+						break;
+						case 'b':
+							panel[ j ].checked = data[ j ] === true;
+							panel[ j ].parentElement.parentElement.style.display = 'block';
+						break;
+						case 'c':
+							panel[ j ].value = data[ j ];
+							panel[ j ].parentElement.parentElement.style.display = 'block';
+							break;
+						case 'v3':
+							panel[ j + 'x' ].value = data[ j ].x;
+							panel[ j + 'y' ].value = data[ j ].y;
+							panel[ j + 'z' ].value = data[ j ].z;
+							panel[ j + 'x' ].parentElement.parentElement.style.display = 'block';
+							panel[ j + 'y' ].parentElement.parentElement.style.display = 'block';
+							panel[ j + 'z' ].parentElement.parentElement.style.display = 'block';
+						break;
+					}
+				}
+
+				for( var i in categories ){
+					for (var k in categories[ i ] ) {
+						if( categories[ i ][ k ] === j ) {
+							var el = document.getElementById( i + '-panel' );
+							el.style.display = 'block';
+							logMsg( 'SHOW ' + i );
+						}
+					}
+				}
+			}
+
 			break;
 		case 'render':
 			/*g.setEdge( msg.cameraId, msg.sceneId, { 

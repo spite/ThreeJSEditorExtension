@@ -21,13 +21,18 @@ body{ background-color: #eee; -webkit-user-select: none; cursor: default; }
 #toolbarContainer a{ width: 21px; height: 21px; margin: 2px; display: block; background-repeat: no-repeat; background-position: 50% 50%; background-size: contain;}
 #settingsButton{ background-image: url( assets/gears.svg ); }
 #highlightButton{ background-image: url( assets/eye.svg ); }
-#treeView{ position: absolute; left: 0; top: 0; right: 50%; bottom: 0; overflow: auto;}
-#editPanel{ position: absolute; left: 50%; top: 0; right: 0; bottom: 0; overflow: auto; border-left: 1px solid white;}
-.panel{ padding: 10px;} 
-.panel div{ position: relative; width: 100%; height: 20px;}
-.panel span:first-child{ position: absolute; left: 0; top: 0; width: 80px;}
+#treeView{ position: absolute; left: 0; top: 0; right: 300px; bottom: 0; overflow: auto;}
+#editPanel{ position: absolute; width: 300px; top: 0; right: 0; bottom: 0; overflow: auto; border-left: 1px solid white; border-right: 1px solid #999;}
+.panel{width: 100% }
+.panel section{ padding: 10px; border-top: 1px solid white; border-bottom: 1px solid #999; display: none;} 
+.panel div{ position: relative; width: 100%; height: 30px;}
+.panel span:first-child{ position: absolute; left: 0; top: 0; width: 80px; padding: 5px 0;}
 .panel span:nth-child(2){ position: absolute; left: 80px; top: 0; right: 0;}
-.panel input[type=number]{ width: 60px;}
+.panel input[type=number]{ width: 33%;}
+.panel input[type=text]{ width: 100%;}
+.panel input[type=checkbox]{ margin: 5px 0;}
+.panel input{ padding: 5px; outline: none;}
+.panel input[type=color]{ padding: 2px;}
 </style>
 <link href='treeView/treeView.css' rel='stylesheet' type='text/css'>
 <script src="treeView/treeView.js"></script>
@@ -38,7 +43,7 @@ body{ background-color: #eee; -webkit-user-select: none; cursor: default; }
 	<h1>Three.js scene editor extension<br/>v1.0.0 (beta)</h1>
 	<p>To start tracking three.js scenes,<br/>the extension needs to reload the page.</p>
 	<button id="reload" >Reload</button>
-	<p>Bugs, ideas and feedback: <a rel="external" href="https://github.com/spite/Three.jsExtension">GitHub page</a><br/><a rel="external" href="https://twitter.com/thespite" >@thespite</a> | <a rel="external" href="http://www.clicktorelease.com" >www.clicktorelease.com</a></p>
+	<p>Bugs, ideas and feedback: <a rel="external" href="https://github.com/spite/ThreeJSEditorExtension">GitHub page</a><br/><a rel="external" href="https://twitter.com/thespite" >@thespite</a> | <a rel="external" href="http://www.clicktorelease.com" >www.clicktorelease.com</a></p>
 </div></div>
 <div id="waiting" >
 	<p>Waiting for scenes to be created...</p>
@@ -48,13 +53,36 @@ body{ background-color: #eee; -webkit-user-select: none; cursor: default; }
   <div id="treeView"></div>
   <div id="editPanel">
     <div class="panel">
-      <div><h1>Object3D</h1></div>
-      <div><span>Visible</span><span><input type="checkbox" id="object3dVisible" name="object3dVisible"/></span></div>
-      <div><span>Position</span><span><input type="number" id="object3dPositionX"/><input type="number" id="object3dPositionY"/><input type="number" id="object3dPositionZ"/></span></div>
-      <div><span>Rotation</span><span><input type="number" id="object3dRotationX"/><input type="number" id="object3dRotationY"/><input type="number" id="object3dRotationZ"/></span></div>
-      <div><span>Scale</span><span><input type="number" id="object3dScaleX"/><input type="number" id="object3dScaleY"/><input type="number" id="object3dScaleZ"/></span></div>
-      <div><h1>Light</h1></div>
-      <div><span>Color</span><span><input type="text" id="lightColor" name="lightColor"/></span></div>
+      <section id="object3d-panel">
+        <div><h1>Object3D</h1></div>
+        <div><span>UUID</span><span><input type="text" id="object3d-uuid" name="object3d-uuid"/></span></div>
+        <div><span>Name</span><span><input type="text" id="object3d-name" name="object3d-name"/></span></div>
+        <div><span>Visible</span><span><input type="checkbox" id="object3d-visible" name="object3d-visible"/></span></div>
+        <div><span>Position</span><span><input type="number" id="object3d-position-x"/><input type="number" id="object3d-position-y"/><input type="number" id="object3d-position-z"/></span></div>
+        <div><span>Rotation</span><span><input type="number" id="object3d-rotation-x"/><input type="number" id="object3d-rotation-y"/><input type="number" id="object3d-rotation-z"/></span></div>
+        <div><span>Scale</span><span><input type="number" id="object3d-scale-x"/><input type="number" id="object3d-scale-y"/><input type="number" id="object3d-scale-z"/></span></div>
+        <div><span>Data</span><span><input type="text" id="object3d-data" name="object3d-data"/></span></div>
+      </section>
+      <section id="light-panel">
+        <div><h1>Light</h1></div>
+        <div><span>Color</span><span><input type="color" id="light-color" name="light-color"/></span></div>
+        <div><span>Ground Color</span><span><input type="color" id="light-groundColor" name="light-groundColor"/></span></div>
+        <div><span>Intensity</span><span><input type="text" id="light-intensity" name="light-intensity"/></span></div>
+        <div><span>Distance</span><span><input type="text" id="light-distance" name="light-distance"/></span></div>
+        <div><span>Angle</span><span><input type="text" id="light-angle" name="light-angle"/></span></div>
+        <div><span>Decay</span><span><input type="text" id="light-decay" name="light-decay"/></span></div>
+        <div><span>Exponent</span><span><input type="text" id="light-exponent" name="light-exponent"/></span></div>
+      </section>
+      <section id="camera-panel">
+        <div><h1>Camera</h1></div>
+        <div><span>FOV</span><span><input type="text" id="camera-fov" name="camera-fov"/></span></div>
+        <div><span>Near</span><span><input type="text" id="camera-near" name="camera-near"/></span></div>
+        <div><span>Far</span><span><input type="text" id="camera-far" name="camera-far"/></span></div>
+        <div><span>Left</span><span><input type="text" id="camera-left" name="camera-left"/></span></div>
+        <div><span>Right</span><span><input type="text" id="camera-right" name="camera-right"/></span></div>
+        <div><span>Top</span><span><input type="text" id="camera-top" name="camera-top"/></span></div>
+        <div><span>Bottom</span><span><input type="text" id="camera-bottom" name="camera-bottom"/></span></div>
+      </section>
     </div>
   </div>
 </div>
