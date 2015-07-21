@@ -10,6 +10,7 @@ ul.treeView li span.button{
 	background-size: cover; 
 	opacity: .6; 
 	cursor: pointer;
+	position: absolute;
 }
 ul.treeView{ list-style-type: none; 
 	-webkit-touch-callout: none;
@@ -20,10 +21,13 @@ ul.treeView{ list-style-type: none;
 	user-select: none;
 	line-height: 1.5em;
 	color: #777;
+	position: absolute;
+	left: 0;
+	top: 0;
 }
 ul.treeView ul{ list-style-type: none }
 ul.treeView > li:first-child{ margin-left: .2em;}
-ul.treeView li p{ display: inline; cursor: pointer; }
+ul.treeView li p{ display: inline; cursor: pointer; margin-left: 1.3em;}
 ul.treeView li p:hover{ color: #222;}
 ul.treeView li.collapsed{ height: 1.5em; overflow: hidden;}
 ul.treeView li.collapsed span.button{ background-image: url(plus_square.svg); }
