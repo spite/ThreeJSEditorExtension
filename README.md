@@ -2,6 +2,9 @@
 
 A Chrome DevTools extension to manage any three.js project.
 
+[Install the extension from the Chrome Store](https://chrome.google.com/webstore/detail/threejs-editor-extension/fbgbekpggeldiacgjkacbkkcbjhmakea/)
+[![npm](/about/ChromeWebStore_Badge_v2_496x150.png)](https://chrome.google.com/webstore/detail/threejs-editor-extension/fbgbekpggeldiacgjkacbkkcbjhmakea/)
+
 ![Demo](/about/demo.gif)
 
 Twin project of [WebGL GLSL Shader Editor Extension for Google Chrome](https://github.com/spite/ShaderEditorExtension)
