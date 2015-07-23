@@ -32,8 +32,10 @@ function TreeViewItem( label, id ) {
 
 	this.span.addEventListener( 'click', function( e ) {
 
-		li.classList.toggle( 'collapsed' );
-	
+		if( this.children.length ) {
+			li.classList.toggle( 'collapsed' );
+		}
+		
 		e.preventDefault();
 
 	}.bind( this ) );
