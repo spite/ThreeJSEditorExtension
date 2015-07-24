@@ -10,7 +10,7 @@ function f() {
 	function log( msg ) { logMsg( 'LOG: ' + msg )}
 	function error( msg ) { logMsg( 'ERROR: ' + msg )}
 
-	function logMsg() { 
+	function logMsg() {
 
 		var args = [];
 		for( var j = 0; j < arguments.length; j++ ) {
@@ -152,27 +152,30 @@ function f() {
 
 	function instrumentLate() {
 
-		for( var j in window ) { 
+		var propertiesToIgnore = [ 'webkitStorageInfo', 'webkitIndexedDB' ];
+
+		for( var j in window ) {
+			if( propertiesToIgnore.indexOf( j ) >= 0 ) continue;
 			if( window[ j ] instanceof THREE.WebGLRenderer ) {
 				logMsg( '++ Existing WebGLRenderer' );
 				var object = window[ j ];
-				instrumentRendererRender( object );			
+				instrumentRendererRender( object );
 			}
 			if( window[ j ] instanceof THREE.Object3D ) {
 				logMsg( '++ Existing Object3D' );
 				var object = window[ j ];
-				
+
 				processAddObject( object );
 			}
 		}
-	
+
 	}
 
 	function addObject( object, parent ) {
 
 		var type = sniffType( object );
 		objects[ object.uuid ] = object;
-		
+
 		if( parent && ( type === 'PerspectiveCamera' || type === 'OrthographicCamera' ) ) {
 			if( sniffType( parent ) === 'Scene' ) {
 				return;
@@ -180,7 +183,7 @@ function f() {
 		}
 
 		//logMsg( '++ Adding Object ' + type + ' (' + object.uuid + ') (parent ' + ( parent?parent.uuid:'' ) + ')' );
-		window.postMessage( { source: 'ThreejsEditor', method: 'addObject', id: object.uuid, parentId: parent?parent.uuid:null, type: type, label: type }, '*');						
+		window.postMessage( { source: 'ThreejsEditor', method: 'addObject', id: object.uuid, parentId: parent?parent.uuid:null, type: type, label: type }, '*');
 
 	}
 
@@ -190,7 +193,7 @@ function f() {
 
 		var type = sniffType( object );
 		//logMsg( '++ Removing Object ' + type + ' (' + object.uuid + ') (parent ' + ( parent?parent.uuid:'' ) + ')' );
-		window.postMessage( { source: 'ThreejsEditor', method: 'removeObject', id: object.uuid, parentId: parent?parent.uuid:null }, '*');						
+		window.postMessage( { source: 'ThreejsEditor', method: 'removeObject', id: object.uuid, parentId: parent?parent.uuid:null }, '*');
 
 	}
 
@@ -215,7 +218,7 @@ function f() {
 			logMsg( '++ NEW WebGLRenderer' );
 			instrumentRendererRender( this );
 		} );
-		
+
 		var oldObject3D = THREE.Object3D;
 		THREE.Object3D = _h( THREE.Object3D, function() {
 			logMsg( '++ NEW Object3D' );
@@ -224,14 +227,14 @@ function f() {
 			addObject( object );
 		} );
 		THREE.Object3D.prototype = oldObject3D.prototype;
-		for( var j in oldObject3D ) { 
+		for( var j in oldObject3D ) {
 			if( oldObject3D.hasOwnProperty( j ) ) {
 				THREE.Object3D[ j ] = oldObject3D[ j ];
-			} 
+			}
 		}
 
 		THREE.Object3D.prototype.add = _h( THREE.Object3D.prototype.add, function() {
-			
+
 			var parent = this;
 			if( !parent.uuid ) parent.uuid = generateUUID();
 			for( var j = 0; j < arguments[ 1 ].length; j++ ) {
@@ -244,7 +247,7 @@ function f() {
 		} );
 
 		THREE.Object3D.prototype.remove = _h( THREE.Object3D.prototype.remove, function() {
-			
+
 			var parent = this;
 			for( var j = 0; j < arguments[ 1 ].length; j++ ) {
 				logMsg( '++ Object3D.remove' );
@@ -256,7 +259,7 @@ function f() {
 
 		THREE.WebGLRenderer.prototype.render = _h( THREE.WebGLRenderer.prototype.render, function() {
 
-			processAddObject( object, parent );			
+			processAddObject( object, parent );
 
 		} );
 
@@ -342,18 +345,18 @@ function f() {
 						case 'b':
 						data[ property ] = o[ property ];
 						break;
-						case 'tj': 
+						case 'tj':
 						data[ property ] = JSON.stringify( o[ property ] );
 						break;
 						case 'v3':
-						data[ property ] = { 
+						data[ property ] = {
 							x: o[ property ].x,
 							y: o[ property ].y,
 							z: o[ property ].z,
-						};						
+						};
 						break;
 						case 'c':
-						data[ property ] = o[ property ].getHexString();					
+						data[ property ] = o[ property ].getHexString();
 						break;
 					}
 					//data[ property ][ 'instance' ] = j;
@@ -383,7 +386,7 @@ function f() {
 					if( f && f.type === 'tj' ) {
 						v[ dataFields[ j ] ] = JSON.parse( data.value );
 					} else {
-						v[ dataFields[ j ] ] = data.value;						
+						v[ dataFields[ j ] ] = data.value;
 					}
 				}
 			} else {
@@ -498,7 +501,7 @@ function tearDown() {
 
 	log.textContent = '';
 	logMsg( '>> tear down' );
-	
+
 	while( treeViewContainer.firstChild ) treeViewContainer.removeChild( treeViewContainer.firstChild );
 	objects = {};
 	scenes = {};
@@ -534,7 +537,7 @@ function hashCode(str) { // java String#hashCode
        hash = str.charCodeAt(i) + ((hash << 5) - hash);
     }
     return hash;
-} 
+}
 
 function intToRGB(i){
     var c = (i & 0x00FFFFFF)
@@ -615,7 +618,7 @@ function parseFields( ) {
 backgroundPageConnection.onMessage.addListener( function( msg ) {
 
 	switch( msg.method ) {
-		case 'activateFields': 
+		case 'activateFields':
 			fields = JSON.parse( msg.fields );
 			categories = JSON.parse( msg.categories );
 			parseFields();
@@ -623,7 +626,7 @@ backgroundPageConnection.onMessage.addListener( function( msg ) {
 		case 'inject':
 			logMsg( '>> inject' );
 			tearDown();
-			logMsg( chrome.devtools.inspectedWindow.eval( '(' + f.toString() + ')()' ) ); 
+			logMsg( chrome.devtools.inspectedWindow.eval( '(' + f.toString() + ')()' ) );
 			break;
 		case 'init':
 			logMsg( '>> init' );
@@ -637,25 +640,25 @@ backgroundPageConnection.onMessage.addListener( function( msg ) {
 
 			//logMsg( ' -- OBJECTS RIGHT NOW: ', JSON.stringify( objects ) );
 			if( objects[ msg.id ] === undefined ) {
-				
+
 				var n = new TreeViewItem( msg.label, msg.id );
 				data = {
 					type: msg.type,
 					node: n
 				}
-			
+
 				objects[ msg.id ] = {
 					id: msg.id,
 					parent: msg.parentId,
 					data: data
 				}
 				//logMsg( '>> ADDED' );
-			} 
+			}
 
 			if( msg.parentId ) {
 				objects[ msg.id ].data.parent = msg.parentId;
 			}
-		
+
 			if( msg.parentId ) {
 				//logMsg( '>> CONNECT #', objects[ msg.parentId ], '#', objects[ msg.id ], '#' );
 				if( objects[ msg.id ].data.node.parentNode ) objects[ msg.id ].data.node.parentNode.removeChild( objects[ msg.id ].data.node );
@@ -740,9 +743,9 @@ backgroundPageConnection.onMessage.addListener( function( msg ) {
 
 			break;
 		case 'render':
-			/*g.setEdge( msg.cameraId, msg.sceneId, { 
-				lineInterpolate: 'basis', 
-				arrowhead: 'normal', 
+			/*g.setEdge( msg.cameraId, msg.sceneId, {
+				lineInterpolate: 'basis',
+				arrowhead: 'normal',
 				style: "stroke-dasharray: 5, 5;",
 			} );*/
 			break;
