@@ -183,7 +183,7 @@ function f() {
 		}
 
 		//logMsg( '++ Adding Object ' + type + ' (' + object.uuid + ') (parent ' + ( parent?parent.uuid:'' ) + ')' );
-		window.postMessage( { source: 'ThreejsEditor', method: 'addObject', id: object.uuid, parentId: parent?parent.uuid:null, type: type, label: type }, '*');
+		window.postMessage( { source: 'ThreejsEditor', method: 'addObject', id: object.uuid, parentId: parent?parent.uuid:null, type: type, label: type, visible: object.visible }, '*');
 
 	}
 
@@ -511,7 +511,7 @@ function tearDown() {
 		logMsg( 'SELECTED ' + id );
 		chrome.devtools.inspectedWindow.eval( 'UISelect( \'' + id + '\' )' );
 	}
-	r = new TreeViewItem( 'Renderer', null );
+	r = new TreeViewItem( 'Renderer', null ).setVisible( true );
 	treeView.getRoot().appendChild( r );
 
 	for( var i in categories ){
@@ -641,7 +641,7 @@ backgroundPageConnection.onMessage.addListener( function( msg ) {
 			//logMsg( ' -- OBJECTS RIGHT NOW: ', JSON.stringify( objects ) );
 			if( objects[ msg.id ] === undefined ) {
 
-				var n = new TreeViewItem( msg.label, msg.id );
+				var n = new TreeViewItem( msg.label, msg.id ).setVisible( msg.visible );
 				data = {
 					type: msg.type,
 					node: n

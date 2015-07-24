@@ -23,9 +23,9 @@ function TreeViewItem( label, id ) {
 
 		this.parent.clear();
 		p.classList.add( 'active' );
-	
+
 		this.parent.onSelect( this.id );
-		
+
 		e.preventDefault();
 
 	}.bind( this ) );
@@ -35,7 +35,7 @@ function TreeViewItem( label, id ) {
 		if( this.children.length ) {
 			li.classList.toggle( 'collapsed' );
 		}
-		
+
 		e.preventDefault();
 
 	}.bind( this ) );
@@ -53,6 +53,13 @@ TreeViewItem.prototype.render = function() {
 
 }
 
+TreeViewItem.prototype.setVisible = function( boolean ) {
+
+	this.li.classList.toggle( 'visible', boolean );
+	return this;
+
+}
+
 TreeViewItem.prototype.appendChild = function( child ) {
 
 	child.parent = this.parent;
@@ -60,7 +67,7 @@ TreeViewItem.prototype.appendChild = function( child ) {
 
 	if( this.ul === null ) {
 		this.ul = document.createElement( 'ul' );
-		this.li.appendChild( this.ul );		
+		this.li.appendChild( this.ul );
 	}
 
 	this.children.push( child );
@@ -76,7 +83,7 @@ TreeViewItem.prototype.removeChild = function( child ) {
 	child.parentNode = null;
 
 	if( this.ul === null ) {
-		this.li.removeChild( this.ul );		
+		this.li.removeChild( this.ul );
 	}
 
 	for( var j = 0; j < this.children.length; j++ ) {
